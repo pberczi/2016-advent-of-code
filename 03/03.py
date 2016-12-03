@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import argparse
-import numpy as np
 
 # parse command line args
 parser = argparse.ArgumentParser()
@@ -17,8 +16,19 @@ def valid_triangle((a,b,c)):
   return ((a + b) > c) and ((a + c) > b) and ((b + c) > a)
 
 count = 0
-for i in range(0,len(triangles[0]), 3):
-  if valid_triangle(tuple(triangle)):
-    count += 1
+if args.problem == 1:
+  for triangle in triangles:
+    if valid_triangle(tuple(triangle)):
+      count += 1
+elif args.problem == 2:
+  for col in range(len(triangles[0])):
+    for row in range(0, len(triangles), 3):
+      a = triangles[row][col]
+      b = triangles[row + 1][col]
+      c = triangles[row + 2][col]
+      if valid_triangle((a,b,c)):
+        count += 1
+else:
+  raise ValueError("{0} is not a valid problem number.".format(args.problem)) 
 
 print count
