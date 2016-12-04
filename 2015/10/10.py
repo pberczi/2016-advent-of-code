@@ -34,4 +34,5 @@ n_iter = 50
 for i in range(1, n_iter + 1):
   sequences.append(nextSequence(sequences[i-1]))
 
-print len(sequences[n_iter])
+print len(sequences[40])
+print len(sequences[50])
