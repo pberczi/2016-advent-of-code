@@ -17,11 +17,36 @@ with open(args.input, 'r') as f:
 
 account = json.loads(data[0])
 
-# def processDict(d):
-#   for key in d:
-#     if 
+def processList(l):
+  total = 0
+  for item in l:
+    if type(item) == int or type(item) == float:
+      total += item
+    elif type(item) == dict:
+      total += processDict(item)
+    elif type(item) == list:
+      total += processList(item)
+  return total
 
-total = 0
-for key in account:
-  print key
-  print key.isnumeric()
+def processDict(d):
+  total = 0
+  for (key, val) in d.iteritems():
+    if args.problem == 2 and (key == 'red' or val == 'red'):
+      return 0
+    if type(key) == int or type(key) == float:
+      total += key
+    elif type(key) == dict:
+      total += processDict(key)
+    elif type(key) == list:
+      total += processList(key)
+    
+    if type(val) == int or type(val) == float:
+      total += val
+    elif type(val) == dict:
+      total += processDict(val)
+    elif type(val) == list:
+      total += processList(val)
+  return total
+
+total = processDict(account)
+print total
