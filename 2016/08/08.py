@@ -38,15 +38,18 @@ for line in data:
     if instr[0] == 'rect':
         width = int(instr[1].split('x')[0])
         height = int(instr[1].split('x')[1])
-        rect(pixels, width, height)
+        # rect(pixels, width, height)
+        pixels[:height,:width] = 1
     elif instr[1] == 'row':
         row = int(instr[2].split('=')[1])
         amnt = int(instr[4])
-        rotRow(pixels, row, amnt)
+        # rotRow(pixels, row, amnt)
+        pixels[row,:] = np.concatenate((pixels[row,-amnt:], pixels[row,:-amnt]))
     elif instr[1] == 'column':
         col = int(instr[2].split('=')[1])
         amnt = int(instr[4])
-        rotCol(pixels, col, amnt)
+        # rotCol(pixels, col, amnt)
+        pixels[:,col] = np.concatenate((pixels[-amnt:, col], pixels[:-amnt,col]))
 
 print np.count_nonzero(pixels)
 
