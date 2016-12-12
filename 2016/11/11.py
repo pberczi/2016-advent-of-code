@@ -74,12 +74,16 @@ class Node(object):
           self.children.append(child)
 
 class ChildrenGenerationThread(threading.Thread):
-  def __init__(self, node):
+  def __init__(self, nodes, prev_nodes):
     threading.Thread.__init__(self)
-    self.node = node
-  
+    self.nodes = nodes
+    self.prev_nodes = copy.deepcopy(prev_nodes)
   def run(self):
-    self.node.genChildren()
+    for node in self.nodes:
+      node.genChildren()
+      # for child in node.children:
+      #   if child in self.prev_nodes:
+      #     node.children.remove(child)
 
 items = []
 for line in data:
@@ -105,24 +109,25 @@ gen = 0
 while leaf not in nodes:
   new_nodes = []
   i = 0
-  while i < len(nodes):
-    if threading.activeCount() < max_threads:
-      thread = ChildrenGenerationThread(nodes[i])
-      thread.start()
-      i += 1
-    else:
-      time.sleep(0.01)
+  threads = []
+  for i in range(max_threads):
+    if nodes[i::max_threads] == []:
+      continue
+    thread = ChildrenGenerationThread(nodes[i::max_threads], all_nodes)
+    thread.start()
+    threads.append(thread)
+  
+  for thread in threads:
+    thread.join()
   
   for node in nodes:
-      for child in node.children:
-        if child not in all_nodes:
-          new_nodes.append(child)
-          all_nodes.append(child)
+    all_nodes += node.children
+    new_nodes += node.children
   
   nodes = new_nodes
   gen += 1
   print gen
-  if (gen == 10000):
+  if gen == 50:
     break
 # node 0: initial state
 # generate children of node 0
