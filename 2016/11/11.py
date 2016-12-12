@@ -81,9 +81,9 @@ class ChildrenGenerationThread(threading.Thread):
   def run(self):
     for node in self.nodes:
       node.genChildren()
-      # for child in node.children:
-      #   if child in self.prev_nodes:
-      #     node.children.remove(child)
+      for child in node.children:
+        if child in self.prev_nodes:
+          node.children.remove(child)
 
 items = []
 for line in data:
