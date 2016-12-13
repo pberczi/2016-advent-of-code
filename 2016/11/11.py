@@ -23,15 +23,12 @@ class Node(object):
     self.generation = generation
     self.elevator = elevator
     self.items = items
-    self.children = []
+    for item in self.items:
+      item.sort()
+    self.children = set()
   
   def __eq__(self, other):
-    if self.elevator != other.elevator:
-      return False
-    for i in range(len(self.items)):
-      if sorted(self.items[i]) != sorted(other.items[i]):
-        return False
-    return True
+    return self.elevator == other.elevator and self.items == other.items
   
   def __str__(self):
     s = 'generation ' + str(self.generation) + '\n'
@@ -68,10 +65,12 @@ class Node(object):
         for item in candidate:
           new_items[self.elevator].remove(item)
           new_items[elevator].append(item)
+        for item in self.items:
+          item.sort()
         child = Node(self.generation + 1, elevator, new_items)
         
-        if child not in self.children and child.isValid():
-          self.children.append(child)
+        if child.isValid():
+          self.children.add(child)
 
 class ChildrenGenerationThread(threading.Thread):
   def __init__(self, nodes, prev_nodes):
@@ -84,6 +83,7 @@ class ChildrenGenerationThread(threading.Thread):
       for child in node.children:
         if child in self.prev_nodes:
           node.children.remove(child)
+    print 'thread finished'
 
 items = []
 for line in data:
@@ -101,27 +101,29 @@ for floor in items:
   for item in floor:
     leaf_items[3].append(item)
 
-max_threads = 8
-nodes = [Node(0, 0, items)]
+max_threads = 4
+nodes = set([Node(0, 0, items)])
 all_nodes = copy.deepcopy(nodes)
+all_nodes.clear();
 leaf = Node(0, 3, leaf_items)
 gen = 0
 while leaf not in nodes:
   new_nodes = []
   i = 0
-  threads = []
+  nodelist = list(nodes)
   for i in range(max_threads):
-    if nodes[i::max_threads] == []:
+    if nodelist[i::max_threads] == []:
       continue
-    thread = ChildrenGenerationThread(nodes[i::max_threads], all_nodes)
+    print 'starting thread for nodes', range(i,len(nodelist),max_threads)[0], '-', range(i,len(nodelist),max_threads)[-1], 'out of', len(nodelist) - 1
+    thread = ChildrenGenerationThread(nodelist[i::max_threads], all_nodes)
     thread.start()
-    threads.append(thread)
   
-  for thread in threads:
-    thread.join()
+  for thread in threading.enumerate():
+    if thread != threading.currentThread():
+      thread.join()
   
   for node in nodes:
-    all_nodes += node.children
+    # all_nodes.union(node.children)
     new_nodes += node.children
   
   nodes = new_nodes
